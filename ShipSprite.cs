@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Content;
+using System;
 
 namespace AngularDynamicsExercise;
 
@@ -10,10 +11,19 @@ namespace AngularDynamicsExercise;
 /// </summary>
 public class ShipSprite
 {
-    public Game game;
-    public Texture2D texture;
-    public Vector2 position;
-    public Vector2 velocity;
+    const float LINEAR_ACC = 10;
+    const float ANGULAR_ACC = 5;
+    Game game;
+    Texture2D texture;
+    Vector2 position;
+    Vector2 velocity;
+
+    Vector2 direction;
+
+    float angle; 
+    float angVelo;
+
+    
 
     /// <summary>
     /// Creates the ship sprite
@@ -22,6 +32,7 @@ public class ShipSprite
     {
         this.game = game;
         this.position = new Vector2(375, 250);
+        this.direction = -Vector2.UnitY;
     }
 
     /// <summary>
@@ -42,6 +53,29 @@ public class ShipSprite
         KeyboardState keyboardState = Keyboard.GetState();
         float t = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
+        Vector2 acc = new Vector2(0, 0);
+        float angularAcc = 0;
+        if (keyboardState.IsKeyDown(Keys.Left))
+        {
+            acc += direction * LINEAR_ACC;
+            angularAcc += ANGULAR_ACC;
+            
+        }
+        if (keyboardState.IsKeyDown(Keys.Right))
+        {
+            acc += direction * LINEAR_ACC;
+            angularAcc -= ANGULAR_ACC;
+            
+        }
+
+        angVelo += angularAcc * t;
+        angle += angVelo * t;
+        direction.X = (float)Math.Sin(angle);
+        direction.Y = (float)-Math.Cos(angle);
+
+        velocity += acc * t;
+        position += velocity * t;
+
         // Wrap the ship to keep it on-screen
         var viewport = game.GraphicsDevice.Viewport;
         if (position.Y < 0) position.Y = viewport.Height;
@@ -57,7 +91,7 @@ public class ShipSprite
     /// <param name="spriteBatch">The SpriteBatch to draw with</param>
     public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
     {
-        spriteBatch.Draw(texture, position, Color.White);
+        spriteBatch.Draw(texture, position, null, Color.White, angle, new Vector2(30, 39), 1f, SpriteEffects.None, 0);
     }
 }
 
